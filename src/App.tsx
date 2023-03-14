@@ -5,6 +5,9 @@ import NewNote from './NewNote'
 import useLocalStorage from './useLocalStorage'
 import { useMemo } from 'react'
 import {v4 as uuidV4} from 'uuid'
+import NoteList from './NoteList'
+import NoteLayout from './NoteLayout'
+import Note from './Note'
 
 
 export type Note = {
@@ -16,21 +19,23 @@ export type RawNote = {
 } & RawNoteData
 
 export type NoteData = {
-  title: string,
-  markdown: string,
+  title: string
+  markdown: string
   tags: Tag[]
 }
 
 export type RawNoteData = {
-  title: string,
-  markdown: string,
+  title: string
+  markdown: string
   tagIds: string[]
 }
 
 export type Tag = {
-  id: string,
+  id: string
   label: string
 }
+
+
 
 function App() {
 
@@ -39,7 +44,7 @@ function App() {
 
   const noteWithTags = useMemo(()=>{
     return notes.map(note => {
-      return {...notes, tags: tags.filter(tag => note.tagIds.includes(tag.id))}
+      return {...note, tags: tags.filter(tag => note.tagIds.includes(tag.id))}
     })
   }, [notes,tags])
 
@@ -48,15 +53,17 @@ function App() {
       return [...prevNotes, {...data, id: uuidV4(), tagIds: tags.map(tag => tag.id)}]
     })
   }
-
+  const addTag = (tag: Tag) => {
+    setTags(prev => [...prev, tag])
+  }
   return (
     <Container className="my-4">
     <BrowserRouter>
       <Routes>
-      <Route path="/" element={<h1>hi</h1>}/>
-      <Route path="/new" element={<NewNote/>}/>
-      <Route path="/:id">
-        <Route index element={<p>show</p>} />
+      <Route path="/" element={<NoteList availableTags={tags} notes={noteWithTags}/>}/>
+      <Route path="/new" element={<NewNote onSubmit={onCreateNote} onAddTag={addTag} availableTags={tags}/>}/>
+      <Route path="/:id" element={<NoteLayout notes={noteWithTags} />}>
+        <Route index element={<Note/>} />
         <Route path="edit" element={<p>edit</p>} />
       </Route>
       <Route path="*" element={<Navigate to="/"/>}/>
